@@ -1,4 +1,4 @@
-# OSMOSIS - One-shot Matrix-based Omnidirectional Simultaneous pressure-Integration Solver for pressure from PIV
+# OSMOSIS - One-Shot Matrix-based Omnidirectional Simultaneous pressure-Integration Solver for pressure from PIV
 
 *If you use this code in your PIV project, please cite refs. [2] and [3] in your paper.* 
 
@@ -33,22 +33,22 @@ The compiled CUDA-C++ implementations are executable files.
 The file uses an input argument text file called Arguments.conf. This file has the following contents:
 
 *Iterative Method*
-> SP_CGsolverToleranceRel 1e-4
-> SP_CGsolverToleranceAbs 1e-6
-> SP_SolverDevice GPU
-> SP_PressureSolverToleranceRel 1e-4
-> SP_BoxInputFile Z:\\Path to Whatever\\Filename\\_\<frame\>.vtk
-> SP_BoxOutputFile Pressure\_\<frame\>.vtk
-> SP_NumberOfIterations 1000
-> SP_CheckpointIterations 50
+> SP_CGsolverToleranceRel 1e-4  
+> SP_CGsolverToleranceAbs 1e-6  
+> SP_SolverDevice GPU  
+> SP_PressureSolverToleranceRel 1e-4  
+> SP_BoxInputFile Z:\\Path to Whatever\\Filename\_\<frame\>.vtk  
+> SP_BoxOutputFile Pressure\_\<frame\>.vtk  
+> SP_NumberOfIterations 1000  
+> SP_CheckpointIterations 50  
 > SP_OverRelaxation 1
 
 *One-shot Method*
-    SP_CGsolverToleranceRel 1e-4
-    SP_CGsolverToleranceAbs 1e-6
-    SP_SolverDevice GPU
-    SP_BoxInputFile Z:\\Path to Whatever\\Filename\_<frame>.vtk
-    SP_BoxOutputFile Pressure\_\<frame\>.vtk
+> SP_CGsolverToleranceRel 1e-4  
+> SP_CGsolverToleranceAbs 1e-6  
+> SP_SolverDevice GPU  
+> SP_BoxInputFile Z:\\Path to Whatever\\Filename\_<frame>.vtk  
+> SP_BoxOutputFile Pressure\_\<frame\>.vtk  
 
 The placeholder \<frame\> is not necessary. If present, all instances of \<frame\> are replaced by a number and the code is executed in a loop for all files in that folder matching the string pattern. Say, you have a file named Source_0.vtk, Source_1.vtk, etc. The tag can help with batch processing by using Source\_\<frame\>.vtk
 
@@ -57,6 +57,7 @@ The outputs will follow the same string pattern.
 The tags for each argument (Say, SP_CGsolverToleranceRel) are not case sensitive but must be correctly spelled. 
 
 Here’s the meaning for each of the tags:
+
 **SP_CGsolverToleranceRel:** Relative tolerance (w.r.t. zero first guess) of the Conjugate Gradient matrix solver
 
 **SP_CGsolverToleranceAbs:** Absolute tolerance for the Conjugate Gradient matrix solver
@@ -65,7 +66,7 @@ Here’s the meaning for each of the tags:
 
 **SP_BoxInputFile:** Path to input source term. Must be a *.vtk file (Paraview format). Must be a Rectilinear Grid. Recommended to use the special function vtkwrite.m to build this file: 
 
-vtkwrite(Filename, 'RECTILINEAR_GRID', x, y, z, 'vectors', 'SOURCE', SxN, SyN, SzN, 'BINARY');
+> vtkwrite(Filename, 'RECTILINEAR_GRID', x, y, z, 'vectors', 'SOURCE', SxN, SyN, SzN, 'BINARY');
 
 The \*.vtk file must contain a vector field named SOURCE with the source term on a Ndgrid format (i.e., dimension order is x,y,z). The 1D vectors x, y and z are of the length of the corresponding dimensions and are evenly spaced (say, x=0:dx:xmax).
 
@@ -83,12 +84,11 @@ The \*.vtk file must contain a vector field named SOURCE with the source term on
 The Matlab implementation is a .mex file. It was compiled using Matlab R2023a, and it was tested in Matlab R2021b as well (Windows only). 
 
 *options struct and function prototype*
-    opts.SolverToleranceRel=1e-4
-    opts.SolverToleranceAbs=1e-6
-    opts.SolverDevice='GPU'
-    opts.Verbose=0;
-    
-    \[P_OSMODI, CGS\]=OSMODI(single(Sx),single(Sy),single(Sz),single(\[dx dy\]/L0),opts);
+> opts.SolverToleranceRel=1e-4  
+> opts.SolverToleranceAbs=1e-6  
+> opts.SolverDevice='GPU'  
+> opts.Verbose=0;  
+> \[P_OSMODI, CGS\]=OSMODI(single(Sx),single(Sy),single(Sz),single(\[dx dy\]/L0),opts);
 
 The advantage of the Matlab implementation is the one-line access to the pressure output by the solver. The Matlab function was only implemented for the one-shot solver. The function prototype and usage can be found in the files Test_Taylor2D.m, Test_Taylor3D.m.
 
@@ -110,7 +110,7 @@ If you need to recompile the .mex file for your platform, you need to follow the
 - Make sure you have a Nvidia GPU, otherwise there will be no point;
 - Download Nvidia GPU Computing Toolkit. You need to make sure the toolkit version is the exact one that your Matlab version was built for. This link has the tookit version for each Matlab version (hopefully it still works when you see this.)  
 - Install Microsoft Visual Studio to get the correct compiler. You need the right version of Visual Studio for your Matlab, if the visual studio is too high it will not work. It is very temperamental so look up which one is the right one for you.
-- Once all is set you should be able to run the line mexcuda OSMODI.cu and compile the \*.mexw64 file. This file now will be your function, which you can call by calling [P,CGS]=OSMODI(~,~,~,~,~). Whatever the file name of the \*.mexw64 file is, is the name of the function you will call from within matlab.
+- Once all is set you should be able to run the line mexcuda OSMODI.cu and compile the \*.mexw64 file. This file now will be your function, which you can call by calling [P,CGS]=OSMODI(\~,\~,\~,\~,\~). Whatever the file name of the \*.mexw64 file is, is the name of the function you will call from within matlab.
 
 The code is optimized for GPUs (NVidia only) using the CUDA-C++ library. If a compatible NVidia GPU is not detected or you choose in the input arguments *SP_SolverDevice = "CPU"*, then the CPU solver will be used instead. We used openMP for parallelizing CPU operations, but it still was considerably slower than the GPU solver in our tests (somewhere between 5 and 50 times slower in many cases).
 
