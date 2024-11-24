@@ -1,3 +1,4 @@
+% © 2024. Syracuse University.
 % © 2024. Triad National Security, LLC. All rights reserved.
 % This program was produced under U.S. Government contract
 % 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is
@@ -24,7 +25,6 @@
 % You should have received a copy of the GNU General Public License along
 % with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 clear; clc; close all;
 
 %Generates a Taylor vortex according to Charonko 2010 DOI 10.1088/0957-0233/21/10/105401 3D version
@@ -39,7 +39,7 @@ U0=nu/sqrt(H); %Characteristic Velocity, m/s
 T0=L0/U0; %Characteristic Time, s
 P0=rho*U0^2; %Characteristic Pressure, Pa
 
-NptsX=101; NptsY=NptsX; NptsZ=NptsX;
+NptsX=201; NptsY=NptsX; NptsZ=NptsX;
 
 x=linspace(-2*L0,2*L0,NptsX); y=linspace(-2*L0,2*L0,NptsY); z=linspace(-2*L0,2*L0,NptsZ);
 dx=x(2)-x(1); dy=y(2)-y(1); dz=z(2)-z(1);
@@ -73,12 +73,22 @@ Sz=zeros(size(Sx));
 opts.SolverToleranceRel=1e-4;
 opts.SolverToleranceAbs=1e-6;
 opts.SolverDevice='GPU';
+%opts.Kernel='face-crossing';
+opts.Kernel='cell-centered';
 opts.Verbose=1;
+
+M=zeros(size(Sx));
+M(26:40,26:40,26:40)=1; %Makes sure the degeneracies are handled correctly
+M=M & rand(size(Sx))>0.5;
+Sx(M)=nan;
 
 disp('Starting OSMODI...')
 tic
-[P_OSMODI, CGS]=OSMODI(single(Sx),single(Sy),single(Sz),single([dx dy dz]/L0),opts);
+%[P_OSMODI, CGS]=OSMODI(single(Sx),single(Sy),single(Sz),single([dx dy dz]/L0),opts);
+[P_OSMODI, CGS]=OSMODI(Sx,Sy,Sz,[dx dy dz]/L0,opts);
 toc
+
+%figure; imagesc(squeeze(P_OSMODI(:,ceil(NptsX/2),:)));colorbar
 
 disp(['Time Taken for just GPU computation: ' num2str(CGS(end,3)-CGS(1,3)) 's'])
 
@@ -105,8 +115,9 @@ Err=(P_OSMODI - Ptruth)./NormPmax;
 ErrorPercent=100*sqrt(sum(Err(:).^2)./numel(Err));
 disp(['Error = ' num2str(ErrorPercent, '%0.3f') '%'])
 
-figure('color','w','Position', [1.3538e+03 530.6000 560 420]); semilogy(CGS(:,1), CGS(:,2))
-title('CG solver convergence')
+% figure('color','w','Position', [1.3538e+03 530.6000 560 420]); semilogy(CGS(:,1), CGS(:,2))
+% title('CG solver convergence')
 
-pause(2)
+% pause(2)
 
+clear;

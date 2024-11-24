@@ -1,3 +1,4 @@
+% © 2024. Syracuse University.
 % © 2024. Triad National Security, LLC. All rights reserved.
 % This program was produced under U.S. Government contract
 % 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is
@@ -24,12 +25,11 @@
 % You should have received a copy of the GNU General Public License along
 % with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 clear; clc; close all;
 
 %Generates a Taylor vortex according to Charonko 2010 DOI 10.1088/0957-0233/21/10/105401
 
-t=.3; %Time, s
+t=.6; %Time, s
 dt=0.001; %dt for time derivative
 H=1e-6; %Vortex strength, m^2
 nu=1e-6; %Kinematic Viscosity, m^2/s
@@ -40,9 +40,9 @@ U0=nu/sqrt(H); %Characteristic Velocity, m/s
 T0=L0/U0; %Characteristic Time, s
 P0=rho*U0^2; %Characteristic Pressure, Pa
 
-NptsX=1001; NptsY=NptsX; r=NptsY/NptsX;
+NptsX=2101; NptsY=NptsX; r=NptsY/NptsX;
 
-DomainSize=3;
+DomainSize=2;
 x=linspace(-DomainSize*L0,DomainSize*L0,NptsX); y=linspace(-DomainSize*L0,DomainSize*L0,NptsY); dx=x(2)-x(1); dy=y(2)-y(1);
 [X,Y]=ndgrid(x,y);
 R=sqrt(X.^2+Y.^2);
@@ -72,17 +72,21 @@ Sz=zeros(size(Sx));
 opts.SolverToleranceRel=1e-4;
 opts.SolverToleranceAbs=1e-6;
 opts.SolverDevice='GPU';
-opts.Verbose=0;
+opts.Verbose=1;
+%opts.Kernel='face-crossing';
+opts.Kernel='cell-centered';
 
-[P_OSMODI, CGS]=OSMODI(single(Sx),single(Sy),single(Sz),single([dx dy]/L0),opts);
+%Sx(10:20,20:40)=nan;
 
-disp(['Time Taken for just GPU computation: ' num2str(CGS(end,3)-CGS(1,3)) 's'])
+%[P_OSMODI, CGS]=OSMODI(double(Sx),double(Sy),double(Sz),double([dx dy]/L0),opts);
+[P_OSMODI, CGS]=OSMODI(Sx,Sy,Sz,[dx dy]/L0,opts);
 
+disp(['Time Taken for just ' opts.SolverDevice ' computation: ' num2str(CGS(end,3)-CGS(1,3)) 's'])
 %%
 
 P_OSMODI=P_OSMODI-P_OSMODI(2,2); %Removes corner value 
 
-figure('color','w','position',[-1.2182e+03 421.8000 915.2000 361.6000]);
+figure('color','w');
 subplot(1,2,1)
 imagesc(P_OSMODI'); colorbar; title('Solver'); daspect([dy dx 1])
 subplot(1,2,2)
@@ -90,11 +94,11 @@ imagesc(P'/(rho*U0^2)); colorbar; title('Truth'); daspect([dy dx 1])
 
 Ptruth=P/(rho*U0^2);
 Err=(P_OSMODI' - Ptruth')./NormPmax;
-figure('color','w'); imagesc(Err); colorbar; title('Error'); daspect([dy dx 1])
+figure('color','w'); imagesc(Err); colorbar; title(['Error (' opts.SolverDevice ')']); daspect([dy dx 1])
 
 ErrorPercent=100*sqrt(sum(Err(:).^2)./numel(Err));
 disp(['Error = ' num2str(ErrorPercent, '%0.3f') '%'])
 
-figure('color','w','Position', [1.3538e+03 530.6000 560 420]); semilogy(CGS(:,1), CGS(:,2))
-title('CG solver convergence')
+% figure('color','w'); semilogy(CGS(:,1), CGS(:,2))
+% title('CG solver convergence')
 
