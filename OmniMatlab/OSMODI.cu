@@ -163,7 +163,7 @@ vector<Progress> CGS_Progress;
 
 bool iequals(const string& a, const string& b)
 {
-    //Adapted from answers in
+	//Adapted from answers in
     //https://stackoverflow.com/questions/11635/case-insensitive-string-comparison-in-c
     return std::equal(a.begin(), a.end(),
         b.begin(), b.end(),
@@ -1250,7 +1250,7 @@ __global__ void UpdateRHS_Vector_GPU(varfloat* PressureField, varfloat* RHS, var
 template <typename varfloat>
 void ConjugateGradientSolver_GPU(varfloat* PressureField, varfloat* RHS, SolverParameters<varfloat> SolverConfig, BoxContents<varfloat> VTK_Contents) {
     // Allocate GPU memory for source field and pressure field
-    cudaFree(0); //Initializes GPU context    
+    cudaFree(0); //Initializes GPU context
     
     //Creates concurrent streams so processing can occur in parallel
     const int nStreams = 4;
@@ -2423,8 +2423,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }    
     plhs[1] = CGS_Progress_mx;
 
-    //Happy message at the end
-    if (SolverConfig.Verbose){
-        mexPrintf("OSMODI completed successfully!\n");
-    }
+    //Happy ending
+    if (SolverConfig.Verbose){mexPrintf("OSMODI completed successfully!\n");}
 }
