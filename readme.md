@@ -12,9 +12,37 @@ The I-MODI solver uses the matrix inversion to perform the same set of integrals
 
 The OS-MODI solver performs a single matrix inversion that provides the pressure solution in one iteration only. This is done by finding the fixed point of the matrix equation in the I-MODI method (i.e., taking the number of iterations to infinity). The mathematics are further outlined in our follow-up paper [3].
 
+
+## Usage - Matlab Code
+The Matlab implementation is a .mex file. It was compiled using Matlab R2023a, and it was tested in Matlab R2021b as well (Windows only). 
+
+*options struct and function prototype*
+> opts.SolverToleranceRel=1e-4;  
+> opts.SolverToleranceAbs=1e-6;   
+> opts.SolverDevice='GPU';  %use 'CPU' or 'GPU'  
+> opts.Kernel='cell-centered';   %use 'cell-centered' for more accuracy or 'face-crossing' for slightly faster processing  
+> opts.Verbose=0; %use 1 if you want convergence info to be printed    
+> \[P_OSMODI, CGS\]=OSMODI(dpdx, dpdy, dpdz , [dx dy dz], opts);
+
+The advantage of the Matlab implementation is the one-line access to the pressure output by the solver. The Matlab function was only implemented for the ***one-shot solver***. The function prototype and usage can be found in the files Test_Taylor2D.m, Test_Taylor3D.m inside Example_SyntheticData. Examples with real data can be found in Example_TRPIV_2D and Example_NTRPIV_2D_AvgP for processing of 2D PIV snapshots for time-resolved and averaged pressure, respectively.
+
+The structure 'opts' holds the options for this solver (shown above). These are case-sensitive. If the default options are to be used (the ones shown above), then you can provide an empty matrix for opts.
+
+The inputs for Sx, Sy, Sz and \[dx, dy, dz\] are double-precision in the latest version. If you want to compute with single-precision you'll need to recompile the OSMODI.cu code by changing *typedef double varfloat*;  to *typedef single varfloat*; 
+
+The outputs of the OSMODI function are P (Pressure field in same grid as dpdx) and CGS (the conjugate gradient solver convergence). CGS(:,1) = iteration; CGS(:,2)=residual; CGS(:,3)=time \[in seconds\].
+
+
+
+
+
 ## Usage - CUDA-C++ Independent Codes
 
 The compiled CUDA-C++ implementations are executable files.
+We ceased the support for the C++ implementations because the Matlab binding is far more convenient to use. We are working on a Python binding (future release).
+
+
+The instructions below are kept for archival purposes. 
 
 ### Workflow 
 
@@ -79,24 +107,6 @@ The \*.vtk file must contain a vector field named SOURCE with the source term on
 **SP_OverRelaxation:** (Only for the iterative solver) Implements over-relaxation to accelerate convergence. Doesn’t really work (i.e., it makes it diverge). Leave as 1.
 
 **SP_SolverDevice:** Can be GPU or CPU. If GPU, attempts to use the GPU with the largest VRAM first. If there’s no GPU or it fails to find one, then it reverts to CPU (Multithreaded with OpenMP). The CPU implementation is ~20-100 times slower than the GPU.
-
-## Usage - Matlab Code
-The Matlab implementation is a .mex file. It was compiled using Matlab R2023a, and it was tested in Matlab R2021b as well (Windows only). 
-
-*options struct and function prototype*
-> opts.SolverToleranceRel=1e-4  
-> opts.SolverToleranceAbs=1e-6  
-> opts.SolverDevice='GPU'  
-> opts.Verbose=0;  
-> \[P_OSMODI, CGS\]=OSMODI(single(Sx),single(Sy),single(Sz),single(\[dx dy\]/L0),opts);
-
-The advantage of the Matlab implementation is the one-line access to the pressure output by the solver. The Matlab function was only implemented for the one-shot solver. The function prototype and usage can be found in the files Test_Taylor2D.m, Test_Taylor3D.m.
-
-The structure opts holds the options for this solver (shown above). These are case-sensitive. If the default options are to be used (the ones shown above), then you can provide an empty matrix for opts.
-
-The inputs for Sx, Sy, Sz and \[dx, dy, dz\] have to be single-precision. This was a choice to facilitate memory management. We noted the single and double precision provide the same output but singles are slightly faster and a larger domain can be fitted in the GPU memory.
-
-The outputs of the OSMODI function are P (Pressure) and CGS (the conjugate gradient solver convergence). CGS(:,1) = iteration; CGS(:,2)=residual; CGS(:,3)=time \[in seconds\].
 
 
 
