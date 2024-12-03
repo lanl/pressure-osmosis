@@ -1,3 +1,30 @@
+% © 2024. Syracuse University.
+% © 2024. Triad National Security, LLC. All rights reserved.
+% This program was produced under U.S. Government contract
+% 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is
+% operated by Triad National Security, LLC for the U.S. Department of
+% Energy/National Nuclear Security Administration. All rights in the
+% program are reserved by Triad National Security, LLC, and the U.S.
+% Department of Energy/National Nuclear Security Administration. The
+% Government is granted for itself and others acting on its behalf a
+% nonexclusive, paid-up, irrevocable worldwide license in this material
+% to reproduce, prepare. derivative works, distribute copies to the
+% public, perform publicly and display publicly, and to permit
+% others to do so.
+%
+% This program is free software: you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by the
+% Free Software Foundation, either version 3 of the License, or (at your
+% option) any later version.
+%
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License along
+% with this program. If not, see <https://www.gnu.org/licenses/>.
+
 clear; clc; close all;
 
 %Generates a Taylor vortex according to Charonko 2010 DOI 10.1088/0957-0233/21/10/105401 3D version
@@ -53,7 +80,6 @@ Sx(M)=nan;
 
 disp('Starting OSMODI...')
 tic
-%[P_OSMODI, CGS]=OSMODI(single(Sx),single(Sy),single(Sz),single([dx dy dz]/L0),opts);
 [P_OSMODI, CGS]=OSMODI(Sx,Sy,Sz,[dx dy dz]/L0,opts);
 toc
 
